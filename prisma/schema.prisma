@@ -12,3 +12,64 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User { 
+  id Int @id @default(autoincrement)
+  name String
+  email String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ModelType { 
+  Base
+  Shopping
+  Learning
+}
+
+model Module {
+  id Int @id @default(autoincrement())
+  name String
+  description String?
+  type ModuleType
+}
+
+model Shopping { 
+  moduleId Int @id
+  module Module @relation(fields: [moduleId], references:[id])
+}
+
+model Learning {
+  moduleId Int @id
+  module Module @relation(fields: [moduleId], references:[id])
+}
+
+model Tool {
+  id Int @id @default(autoincrement())
+  name String
+  description String
+  moduleId Int
+  module Module @relation(fields: [moduleId], references:[id])
+
+  // Self links
+  parentId: Int?
+  parent Tool? @relation("ToolHierarchy", fields: [parentId], references:[id])
+  children: Tool[] @relation("ToolHierarchy")
+  
+  items Item[]
+  createdAt DateTime @default(now())
+  modifiedAt Datetime @updatedAt
+}
+
+model Item {
+  id Int @id @default(autoincrement())
+  name String 
+  img String?
+  price decimal? @db.Decimal(10, 2)
+  toolId Int 
+  tool Tool @relation(fields: toolId, references: [id])
+  createdAt DateTime @default(now())
+  modifiedAt DateTime @updatedAt
+}
+
+
