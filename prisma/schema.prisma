@@ -18,57 +18,63 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-enum ModuleType { 
-  Base
-  Shopping
-  Learning
-}
-
-model Module {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  type        ModuleType
-  
-  shopping    Shopping?
-  learning    Learning?
-  tools       Tool[]
-}
-
-model Shopping { 
-  moduleId Int    @id
-  module   Module @relation(fields: [moduleId], references: [id])
-}
-
-model Learning {
-  moduleId Int    @id
-  module   Module @relation(fields: [moduleId], references: [id])
+enum ToolType {
+  SHOPPING
+  LEARNING
+  WIKI
+  BASE
 }
 
 model Tool {
   id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  moduleId    Int
-  module      Module   @relation(fields: [moduleId], references: [id])
+  name        String  
+  description String?
+  type        ToolType
   
-  // Self links
-  parentId    Int?
-  parent      Tool?    @relation("ToolHierarchy", fields: [parentId], references: [id])
-  children    Tool[]   @relation("ToolHierarchy")
+  // Tool-specific data (one-to-one)
+  shoppingTool ShoppingTool?
+  learningTool LearningTool?
   
+  modules     Module[]  // A tool has many modules
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ShoppingTool {
+  toolId      Int     @id
+  tool        Tool    @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  
+  currency    String  @default("USD")
+  autoSync    Boolean @default(false)
+}
+
+model LearningTool {
+  toolId      Int     @id
+  tool        Tool    @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  
+  difficulty  String?
+  tracked     Boolean @default(true)
+}
+
+model Module {
+  id          Int      @id @default(autoincrement())
+  name        String 
+  description String?
+  toolId      Int
+  
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
   items       Item[]
   createdAt   DateTime @default(now())
-  modifiedAt  DateTime @updatedAt
+  updatedAt   DateTime @updatedAt
 }
 
 model Item {
-  id         Int      @id @default(autoincrement())
-  name       String 
-  img        String?
-  price      Decimal? @db.Decimal(10, 2)
-  toolId     Int 
-  tool       Tool     @relation(fields: [toolId], references: [id])
-  createdAt  DateTime @default(now())
-  modifiedAt DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Decimal? @db.Decimal(10, 2)
+  moduleId  Int
+  
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
