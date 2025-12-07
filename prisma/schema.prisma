@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -14,62 +11,64 @@ datasource db {
 }
 
 model User { 
-  id Int @id @default(autoincrement)
-  name String
-  email String @unique
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum ModelType { 
+enum ModuleType { 
   Base
   Shopping
   Learning
 }
 
 model Module {
-  id Int @id @default(autoincrement())
-  name String
+  id          Int         @id @default(autoincrement())
+  name        String
   description String?
-  type ModuleType
+  type        ModuleType
+  
+  shopping    Shopping?
+  learning    Learning?
+  tools       Tool[]
 }
 
 model Shopping { 
-  moduleId Int @id
-  module Module @relation(fields: [moduleId], references:[id])
+  moduleId Int    @id
+  module   Module @relation(fields: [moduleId], references: [id])
 }
 
 model Learning {
-  moduleId Int @id
-  module Module @relation(fields: [moduleId], references:[id])
+  moduleId Int    @id
+  module   Module @relation(fields: [moduleId], references: [id])
 }
 
 model Tool {
-  id Int @id @default(autoincrement())
-  name String
+  id          Int      @id @default(autoincrement())
+  name        String
   description String
-  moduleId Int
-  module Module @relation(fields: [moduleId], references:[id])
-
-  // Self links
-  parentId: Int?
-  parent Tool? @relation("ToolHierarchy", fields: [parentId], references:[id])
-  children: Tool[] @relation("ToolHierarchy")
+  moduleId    Int
+  module      Module   @relation(fields: [moduleId], references: [id])
   
-  items Item[]
-  createdAt DateTime @default(now())
-  modifiedAt Datetime @updatedAt
+  // Self links
+  parentId    Int?
+  parent      Tool?    @relation("ToolHierarchy", fields: [parentId], references: [id])
+  children    Tool[]   @relation("ToolHierarchy")
+  
+  items       Item[]
+  createdAt   DateTime @default(now())
+  modifiedAt  DateTime @updatedAt
 }
 
 model Item {
-  id Int @id @default(autoincrement())
-  name String 
-  img String?
-  price decimal? @db.Decimal(10, 2)
-  toolId Int 
-  tool Tool @relation(fields: toolId, references: [id])
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  name       String 
+  img        String?
+  price      Decimal? @db.Decimal(10, 2)
+  toolId     Int 
+  tool       Tool     @relation(fields: [toolId], references: [id])
+  createdAt  DateTime @default(now())
   modifiedAt DateTime @updatedAt
 }
-
-
